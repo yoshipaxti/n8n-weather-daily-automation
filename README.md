@@ -29,3 +29,18 @@ This workflow saves time, eliminates manual posting, and ensures consistent weat
 ```bash
 git clone https://github.com/<yourusername>/n8n-weather-daily-automation.git
 cd n8n-weather-daily-automation
+
+2) Import Workflow in n8n
+- Open your n8n dashboard
+- Go to Workflows → Import
+- Select workflow/n8n-weather-daily.json
+
+3) Configure Credentials
+You’ll need:
+- OpenWeather API Key
+- Placid API Key & Template ID
+- Facebook Page Access Token
+- Google API (Sheets)
+- Email SMTP credentials
+
+Add them in Credentials inside n8n.
