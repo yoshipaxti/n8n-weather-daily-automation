@@ -1,0 +1,9 @@
+📄 Workflow Details
+The JSON workflow (workflow/n8n-weather-daily.json) includes:
+1. Schedule Trigger (daily run)
+2. HTTP Request to OpenWeather
+3. Placid Render Node
+4. Facebook Graph API Post
+5. Error Catch & Route
+6. Google Sheets Append
+7. Email Notification
