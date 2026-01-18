@@ -1,0 +1,126 @@
+🤝 Contributing
+
+Fork it 🛠
+1. Create your feature branch
+2. Submit a PR
+3. Any improvements to logging, error handling, or multi-platform posting are welcome!
+
+
+---
+
+## 📄 workflow/n8n-weather-daily.json (stub you’ll replace with your export)
+
+> **Note:** n8n export JSON must come straight from your editor after building the workflow. Here’s a **template scaffold** you can paste and then import after exporting from your n8n instance:
+
+```json
+{
+  "name": "Daily Weather Update Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            { "mode": "everyDay", "hour": 8, "minute": 0 }
+          ]
+        }
+      },
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "name": "Fetch Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [300, 300],
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=YOUR_CITY&appid={{$credentials.openweatherApiKey}}",
+        "responseFormat": "json"
+      }
+    },
+    {
+      "name": "Render Placid",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "parameters": {
+        "url": "https://api.placid.app/u/YOUR_TEMPLATE_ID",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"weatherData\": {{$json}}}"
+      }
+    },
+    {
+      "name": "Post to Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [700, 300],
+      "parameters": {
+        "url": "https://graph.facebook.com/v17.0/YOUR_PAGE_ID/photos",
+        "method": "POST",
+        "formData": {
+          "access_token": "={{$credentials.facebookPageToken}}",
+          "caption": "Daily Weather Update",
+          "url": "={{$node[\"Render Placid\"].json[\"url\"]}}"
+        }
+      }
+    },
+    {
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [100, 500]
+    },
+    {
+      "name": "Log Error to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [300, 500],
+      "parameters": {
+        "operation": "append",
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "Errors!A:C",
+        "valueInputMode": "RAW",
+        "columns": [
+          "={{$json[\"message\"]}}",
+          "={{$json[\"stack\"]}}",
+          "={{$now}}"
+        ]
+      }
+    },
+    {
+      "name": "Email Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [500, 500],
+      "parameters": {
+        "from": "your@domain.com",
+        "to": "alerts@domain.com",
+        "subject": "Weather Workflow Error",
+        "text": "Error: {{$json[\"message\"]}}"
+      }
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [[{ "node": "Fetch Weather", "type": "main", "index": 0 }]]
+    },
+    "Error Trigger": {
+      "main": [
+        [{ "node": "Log Error to Sheets", "type": "main", "index": 0 }],
+        [{ "node": "Email Notification", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}
+
+
+First Commit (example)
+git init
+git add .
+git commit -m "Initial import – n8n weather automation workflow"
+git branch -M main
+git remote add origin https://github.com/<yourusername>/n8n-weather-daily-automation.git
+git push -u origin main
