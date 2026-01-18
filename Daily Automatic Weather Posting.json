@@ -1,0 +1,487 @@
+{
+  "name": "Daily Automatic Weather Posting",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "=days",
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        128
+      ],
+      "id": "03bbc2cd-b369-440c-9c76-6a0fe9081f71",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        704,
+        320
+      ],
+      "id": "12ed798d-e183-4527-ab9c-e13de738c408",
+      "name": "Weather API",
+      "retryOnFail": true,
+      "waitBetweenTries": null,
+      "notesInFlow": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grab data and set fallback\nconst data = $input.first().json;\nconst city = data.name || \"Your City\";\n\n// Round temps and convert main to string for Canva\nconst temp = Math.round(data.main.temp).toString();\nconst low = Math.round(data.main.temp_min);\nconst high = Math.round(data.main.temp_max);\n\n// Handle weather state & icons\nconst cities = data.weather[0].main;\nconst icons = {\n  Clear: \"☀️\",\n  \"Mainly Clear\": \"🌤️\",\n  \"Partly Cloudy\": \"⛅\",\n  Clouds: \"☁️\",\n  Fog: \"🌫️\",\n  Drizzle: \"🌦️\",\n  Rain: \"🌧️\",\n  Thunderstorm: \"⛈️\",\n  Snow: \"❄️\"\n};\n\nconst emoji = icons[cities];\n\n// Get local date (YYYY-MM-DD)\nconst today = new Date().toLocaleDateString('en-CA'); \n\nreturn [{\n  json: {\n    city,\n    date: today,\n    temp,\n    condition: cities,\n    emoji,\n    caption: `Good morning! ${city} weather today: ${cities}, ${temp}°C.`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        320
+      ],
+      "id": "102e368e-2e95-4e83-809e-6641ede8b273",
+      "name": "Data Transmission"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template_uuid\": \"\",\n  \"layers\": {\n    \"city\": { \"text\": \"{{ $json.city }}\" },\n    \"emoji\": { \"text\": \"{{ $json.emoji }}\" },\n    \"date\": { \"text\": \"{{ $json.date }}\" },\n    \"temp\": { \"text\": \"{{ $json.temp }}°C\" },\n    \"condition\": { \"text\": \"{{ $json.condition }}\" }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1520,
+        688
+      ],
+      "id": "0783b7dc-314a-49e5-bc39-e150ea5b48c6",
+      "name": "Placid - Image Generation",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1968,
+        688
+      ],
+      "id": "51e0b0ac-cfae-43f6-b607-b335ed2a18b1",
+      "name": "Wait",
+      "webhookId": "174092a9-1a96-44ee-acad-81d08d85b273"
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"polling_url\"]}}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"Authorization\": \"Bearer YOUR API KEY\",\n    \"accept\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2400,
+        688
+      ],
+      "id": "e6c39632-dccc-4175-91c6-479fd61fcddf",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "801f305a-bec6-47a6-8d55-eddd7302c4c7",
+              "leftValue": "={{$json[\"status\"]}}",
+              "rightValue": "=finished",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2800,
+        688
+      ],
+      "id": "51b38171-bf23-471e-8df0-fee83ee17725",
+      "name": "Image Status Checker",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{$json[\"image_url\"]}}\",\n  \"caption\": \"{{$json[\"caption\"]}}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3712,
+        688
+      ],
+      "id": "167302bd-48d0-4556-a3a7-361f6cbb0752",
+      "name": "Facebook Posting",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3280,
+        688
+      ],
+      "id": "3178ea94-7c18-451a-9cdf-895222010b8a",
+      "name": "Merge",
+      "alwaysOutputData": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "### **1. Schedule Trigger**\nThis is the alarm clock of your automation. It decides **when** everything runs.\n\n#### Configuration\n* **Trigger type:** Cron\n* **Mode:** Every day\n* **Time:** `07:00 AM`\n* **Timezone:** Asia/Manila",
+        "height": 272,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "39ac310e-96e2-4a56-8f5b-7ac2ef39ab2a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\n### **2. Openweather API Node (HTTP Request)**\nCalls OpenWeather and retrieves:\n* City\n* Date\n* Temperature\n* Weather condition\n* Others\n\n#### Configuration\n* **Method:** `GET`\n* **URL:**  `https://api.openweathermap.org/data/2.5/weather`\n \n* **Query Parameters:**\n  * `q` → `\"Manila\"`\n  * `units` → `metric`\n  * `appid` → `YOUR_API_KEY`\n  * `lang`  → `en`",
+        "height": 480,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        448,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "3f3a4c47-ee43-4a04-9ff7-d05df40275e7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### **3. Data Transmission Node**\nNormalizes weather data so downstream nodes.\n#### Typical output structure\n```json\n{\n  \"city\": \"Manila\",\n  \"temp\": 31,\n  \"condition\": \"Cloudy\",\n  \"description\": \"broken clouds\"\n}\n```",
+        "height": 480,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "87daae85-9b8a-429c-9637-0e7bf8138d11",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "\n### **4. Placid – Image Generation Node (HTTP Request)**\n\nSends data to Placid to generate an image using a **template**.\n\n### Configuration\n* **Method:** `POST`\n* **URL:** `https://api.placid.app/api/rest/images`\n* **Headers:**\n  * `Generic Credential Type`\n  * `Header Auth`\n  * `Authorization: Bearer YOUR_PLACID_API_KEY`\n  * `Content-Type: application/json`\n### Body (important)\n```json\n{\n  \"template_uuid\": \"08ueahvvqu309\",\n  \"layers\": {\n    \"city\": { \"text\": \"{{ $json.city }}\" },\n    \"emoji\": { \"text\": \"{{ $json.emoji }}\" },\n    \"date\": { \"text\": \"{{ $json.date }}\" },\n    \"temp\": { \"text\": \"{{ $json.temp }}°C\" },\n    \"condition\": { \"text\": \"{{ $json.condition }}\" }\n  }\n}\n```\n**Note: Layer names must EXACTLY match** Placid template layer IDs\n(Placid is case-sensitive and unforgiving)\n\n",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1264,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "96b30342-5a9d-43dc-8e53-c33207e89acf",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "### **5. Wait Node**\n\n#### Configuration\n* **Wait mode:** Time interval\n* **Duration:** 30 seconds (Placid Image generation takes atleast 30 seconds before completely generated)\n",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1696,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9ace23f5-24bc-45af-bec2-5c9d8fa4bf71",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "### ** 6. HTTP Request (Image Status Check)**\nPolls Placid using the image ID returned earlier.\n#### Configuration\n* **Method:** `GET`\n* **URL:** `https://api.placid.app/api/rest/images/{{ $json.id }}`\n* **Auth:** `Same Placid API key`\n\n#### Expected response\n```json\n{\n\"id\": {{ $json.id }},\n\"type\": \"image\",\n\"status\": \"queued\", \n\"image_url\": null,\n\"transfer_url\": null,\n\"polling_url\": \"https://api.placid.app/api/rest/images/{{ $json.id }}\",\n\"passthrough\": null,\n\"errors\": \n}\n```",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2128,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "966615bf-dcef-4a99-8367-f33aa2330d7a",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "\n### **7. Image Status Checker (IF Node)**\n**Proceed only if `status = finished`**\n#### Condition\n* value1: `{{ $json.status }}`\n* Operation: `is not equals to`\n* value2: `finished`\n\n#### Logic\n* **False** → Continue to posting\n* **True** → Loop back → Wait → Check again\n",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2560,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "6cd03234-6b43-40c3-aee9-3b8d9d98880f",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "### **9.Facebook Posting (HTTP Request)**\nUploads image + caption to Facebook Page.\n\n### Configuration\n* **Method:** `POST`\n* **URL:**`https://graph.facebook.com/v24.0/PAGE_ID/photos`\n* `Generic Credential Type`\n  * `Header Auth`\n  * `Authorization: Bearer YOUR_PAGE_API_TOKEN`\n  * `Content-Type: application/json`\n```json\n{\n  \"url\": \"{{$json[\"image_url\"]}}\",\n  \"caption\": \"{{$json[\"caption\"]}}\"\n}\n ```\n### Credentials setup\n* Use **Facebook Graph API**\n* Token MUST have:\n  * `pages_manage_posts`\n  * `pages_read_engagement`\n  * Page access token (not user token)\n\n",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3424,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "dc8213b8-cccb-47da-bad6-ed18085dab9a",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "\n### **8. Merge (Combine)**\n**“Reunite Data Transmission Data + Placid Image Generation.”**\n* **Combine**\n* Input 1 → Data Transmission Data\n* Input 2 → Placid Image Generation",
+        "height": 864,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2992,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "f2a9587c-52b7-4ea5-8fb6-b6edaa1eae75",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "### Error Handling Strategy\n\n##### 1. A global error workflow is configured as a centralized Error Logger, responsible for capturing and notifying all workflow failures.\n\n##### 2. Retry logic is enabled on every node, allowing up to three retry attempts whenever an error occurs before the failure is escalated.",
+        "height": 288,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3856,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "cfe5b7de-4d38-491c-89c6-19aa8b6f02d0",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "Placid - Image Generation": [
+      {
+        "json": {
+          "id": 96654536,
+          "type": "image",
+          "status": "queued",
+          "image_url": null,
+          "transfer_url": null,
+          "polling_url": "https://api.placid.app/api/rest/images/96654536",
+          "passthrough": null,
+          "errors": []
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Weather API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather API": {
+      "main": [
+        [
+          {
+            "node": "Data Transmission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Transmission": {
+      "main": [
+        [
+          {
+            "node": "Placid - Image Generation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placid - Image Generation": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Image Status Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Status Checker": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Facebook Posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "88513bb6-d625-4e0f-a283-6e7c12b06edf",
+  "meta": {
+    "instanceId": "a4f79847b59124103df3285e4b4a00e557ef8e2d79c956b54a1a5586b214269c"
+  },
+  "id": "RXAaTQ67EKm_9nSw-NUe8",
+  "tags": []
+}
