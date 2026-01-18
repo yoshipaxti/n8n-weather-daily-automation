@@ -1,2 +1,31 @@
-# n8n-weather-daily-automation
-Automated daily weather updates workflow with n8n — fetches data, generates visuals with Placid, posts to Facebook, and handles errors with logging &amp; notifications. Built for reliability and time savings.
+# n8n-Weather Daily Automation
+
+Automate daily weather updates with n8n:  
+✔ Fetch real-time weather data  
+✔ Generate visual posts via Placid templates  
+✔ Publish automatically to Facebook  
+✔ Log errors to Google Sheets & send email alerts
+
+This workflow saves time, eliminates manual posting, and ensures consistent weather updates every day. :contentReference[oaicite:1]{index=1}
+
+---
+
+## 📦 Features
+
+- **Data collection** from OpenWeather API
+- **Design & rendering** using Placid
+- **Automatic posting** to Facebook
+- **Error handling**
+  - Global error route
+  - Log to Google Sheets
+  - Email notification on failure
+
+---
+
+## 🚀 Get Started
+
+### 1) Clone the Repo
+
+```bash
+git clone https://github.com/<yourusername>/n8n-weather-daily-automation.git
+cd n8n-weather-daily-automation
