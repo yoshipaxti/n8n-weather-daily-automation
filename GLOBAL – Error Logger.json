@@ -1,0 +1,433 @@
+{
+  "name": "GLOBAL – Error Logger",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -128
+      ],
+      "id": "220fe34b-6743-48d3-96f9-369488c268e9",
+      "name": "Error Trigger",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5eef9d6d-9694-478e-8163-783be8af80e2",
+              "name": "Workflow ID",
+              "value": "={{ $json.workflow.id }}",
+              "type": "string"
+            },
+            {
+              "id": "394c684a-b33a-40ea-a76e-07ebd846488e",
+              "name": "Workflow Name:",
+              "value": "={{ $json.workflow.name }}",
+              "type": "string"
+            },
+            {
+              "id": "05cff8b7-1065-481b-bd88-baef9cc29ec2",
+              "name": "Failed Node:",
+              "value": "={{ $json.execution.error.node.name }}",
+              "type": "string"
+            },
+            {
+              "id": "5c1a6de5-5a01-4861-9d06-10c154729785",
+              "name": "Error Message:",
+              "value": "={{ $json.execution.error.message }}",
+              "type": "string"
+            },
+            {
+              "id": "ad11954a-117d-4ae4-985a-e384351c6fef",
+              "name": "Error Stack",
+              "value": "={{ $json.execution.error.stack }}",
+              "type": "string"
+            },
+            {
+              "id": "ba4451d2-efe7-4da6-a69e-70f4784519b1",
+              "name": "Execution ID:",
+              "value": "={{ $json.execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "0903715e-4065-4c82-ae1b-c4d4f22e875e",
+              "name": "Time",
+              "value": "={{ $json.execution.error.timestamp }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        -128
+      ],
+      "id": "41bbf035-5f88-49e0-8b93-91ca5c88b8e5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "### **4. Gmail:** \nConfigured for real-time alerting. The body uses the mapped fields from the previous node to provide immediate context for debugging.\n  * **Auth Type: OAuth2**\n  * **Scope:  https://www.googleapis.com/auth/gmail.send**\n",
+        "height": 336,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "7a474db6-9f3d-4eeb-a988-f2b68d6bf0ca",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sendTo": "jupiter.dacut.rowel@gmail.com",
+        "subject": "=⚠️ Workflow Error: {{ $json[\"Workflow Name:\"] }} - {{ $json[\"Failed Node:\"] }}",
+        "message": "=<div style=\"font-family: 'Courier New', Courier, monospace; background-color: #fcfcfc; padding: 20px; border: 1px solid #e0e0e0; border-radius: 4px;\">\n  <h2 style=\"color: #c9302c; border-bottom: 2px solid #c9302c; padding-bottom: 10px;\">WORKFLOW ERROR REPORT</h2>\n  \n  <p>The following error was captured by the Global Error Logger:</p>\n\n  <table style=\"width: 100%; border-collapse: collapse;\">\n    <tr style=\"background-color: #f2f2f2;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold; width: 30%;\">Execution ID</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $json[\"Execution ID:\"] }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold;\">Workflow Name</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $json[\"Workflow Name:\"] }}</td>\n    </tr>\n    <tr style=\"background-color: #f2f2f2;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold;\">Workflow ID</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $json[\"Workflow ID\"] }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #d9534f;\">Failed Node</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #d9534f;\">{{ $json[\"Failed Node:\"] }}</td>\n    </tr>\n    <tr style=\"background-color: #f2f2f2;\">\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold;\">Error Message</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd; color: #c9302c;\">{{ $json[\"Error Message:\"] }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 10px; border: 1px solid #ddd; font-weight: bold;\">Timestamp</td>\n      <td style=\"padding: 10px; border: 1px solid #ddd;\">{{ $json.Time }}</td>\n    </tr>\n  </table>\n\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        128
+      ],
+      "id": "69fad992-6015-442e-853e-4b7b8108794b",
+      "name": "Gmail Notification",
+      "webhookId": "405ed910-444b-4ab9-8424-0d383627446b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "37wOKkmtkEKisw4W",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1FfGttNcVt8DkkQaxuANDKnCEAjcl9lIp4VONyhZWGzE",
+          "mode": "list",
+          "cachedResultName": "DAWP - Error Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FfGttNcVt8DkkQaxuANDKnCEAjcl9lIp4VONyhZWGzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FfGttNcVt8DkkQaxuANDKnCEAjcl9lIp4VONyhZWGzE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution ID": "={{ $json[\"Execution ID:\"] }}",
+            "Workflow ID": "={{ $json[\"Workflow ID\"] }}",
+            "Workflow Name": "={{ $json[\"Workflow Name:\"] }}",
+            "Node Name": "={{ $json[\"Failed Node:\"] }}",
+            "Error Message": "={{ $json[\"Error Message:\"] }}",
+            "Error Stack": "={{ $json[\"Error Stack\"] }}",
+            "Time": "={{ $json.Time }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Execution ID",
+              "displayName": "Execution ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow ID",
+              "displayName": "Workflow ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow Name",
+              "displayName": "Workflow Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Node Name",
+              "displayName": "Node Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Stack",
+              "displayName": "Error Stack",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -240
+      ],
+      "id": "5752842f-7e1f-4571-b2ec-497629dc2a9e",
+      "name": "Error Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XsvXbA3tKkViIuGA",
+          "name": "GAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### **1. Error Trigger** \nConfigured as the global error handler. It catches the execution object error from Daily Automatic Weather Posting workflow.",
+        "height": 288,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -784,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "8914594c-972a-44ec-af5a-df496e01d650",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\n### **2. Edit Fields** \nUsed to sanitize the payload. I've mapped the {{ $json.workflow.id }}, {{ $json.workflow.name }}\t,{{ $json.execution.error.node.name }},{{ $json.execution.error.message }},{{ $json.execution.error.stack }},{{ $json.execution.id }} and {{ $json.execution.error.timestamp }to simplify the downstream mapping.\n",
+        "height": 384,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "78b9a95e-fccb-45da-b5d5-2abcdff6321b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "\n### **3. Google Sheets:**\n Standard append operation. It’s mapped to the log sheet to maintain an audit trail for uptime error reporting.\n  * **Auth Type: OAuth2**\n  * **Scope: https://www.googleapis.com/auth/spreadsheets**\n",
+        "height": 352,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "cb787dff-9086-433c-9ab2-f94bc0145d9e",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "47702",
+            "url": "https://n8n.resolvr.digital/workflow/lDvumDkWElGRMlHU/executions/47702",
+            "error": {
+              "level": "warning",
+              "tags": {},
+              "description": "Error validating access token: Session has expired on Friday, 02-Jan-26 03:00:00 PST. The current time is Friday, 02-Jan-26 03:01:25 PST.",
+              "timestamp": 1767351685893,
+              "context": {
+                "itemIndex": 0,
+                "request": {
+                  "body": {
+                    "url": "https://placid-fra.fra1.digitaloceanspaces.com/production/rest-images/08ueahvvqu309/rest-9d78ee05842c0ea9de56cc17c10e6d6f-3krtqqbi.jpg",
+                    "caption": "Good morning! Manila weather today: Clouds, 24°C."
+                  },
+                  "headers": {
+                    "content-type": "application/json",
+                    "Authorization": "**hidden**",
+                    "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7"
+                  },
+                  "method": "POST",
+                  "uri": "https://graph.facebook.com/v24.0//photos",
+                  "gzip": true,
+                  "rejectUnauthorized": true,
+                  "followRedirect": true,
+                  "resolveWithFullResponse": true,
+                  "followAllRedirects": true,
+                  "timeout": 300000,
+                  "encoding": null,
+                  "json": false,
+                  "useStream": true
+                }
+              },
+              "functionality": "regular",
+              "name": "NodeApiError",
+              "node": {
+                "parameters": {
+                  "preBuiltAgentsCalloutHttpRequest": "",
+                  "curlImport": "",
+                  "method": "POST",
+                  "url": "https://graph.facebook.com/v24.0//photos",
+                  "authentication": "genericCredentialType",
+                  "genericAuthType": "httpHeaderAuth",
+                  "provideSslCertificates": false,
+                  "sendQuery": false,
+                  "sendHeaders": true,
+                  "specifyHeaders": "keypair",
+                  "headerParameters": {
+                    "parameters": [
+                      {
+                        "name": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ]
+                  },
+                  "sendBody": true,
+                  "contentType": "json",
+                  "specifyBody": "json",
+                  "jsonBody": "={\n  \"url\": \"{{$json[\"image_url\"]}}\",\n  \"caption\": \"{{$json[\"caption\"]}}\"\n}\n",
+                  "options": {},
+                  "infoMessage": ""
+                },
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.3,
+                "position": [
+                  1808,
+                  64
+                ],
+                "id": "cd218edc-b104-4289-b4a6-60d5a8ea3609",
+                "name": "Facebook Posting",
+                "retryOnFail": true,
+                "waitBetweenTries": 5000,
+                "notesInFlow": false,
+                "credentials": {
+                  "facebookGraphAppApi": {
+                    "id": "ifxwq8avnnmHJe8Y",
+                    "name": "Facebook Graph (App) account"
+                  },
+                  "httpHeaderAuth": {
+                    "id": "hYQUeemx0500XqXJ",
+                    "name": "Facebook Page"
+                  }
+                }
+              },
+              "messages": [
+                "401 - \"{\\\"error\\\":{\\\"message\\\":\\\"Error validating access token: Session has expired on Friday, 02-Jan-26 03:00:00 PST. The current time is Friday, 02-Jan-26 03:01:25 PST.\\\",\\\"type\\\":\\\"OAuthException\\\",\\\"code\\\":190,\\\"error_subcode\\\":463,\\\"fbtrace_id\\\":\\\"AhfV3beaxxeTJCEhblhOM8o\\\"}}\""
+              ],
+              "httpCode": "401",
+              "message": "Authorization failed - please check your credentials",
+              "stack": "NodeApiError: Authorization failed - please check your credentials\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_8da18263ca0574b0db58d4fefd8173ce/node_modules/n8n-nodes-base/nodes/HttpRequest/V3/HttpRequestV3.node.ts:859:16)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1045:8)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1226:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1662:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2274:11"
+            },
+            "lastNodeExecuted": "Facebook Posting",
+            "mode": "trigger",
+            "executionContext": {
+              "version": 1,
+              "establishedAt": 1767351643491,
+              "source": "trigger"
+            }
+          },
+          "workflow": {
+            "id": "lDvumDkWElGRMlHU",
+            "name": "Daily Automatic Weather Posting"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Error Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "xwqhkhrSmiu7m4SO",
+    "timezone": "Asia/Singapore"
+  },
+  "versionId": "54976eaf-1f80-4e91-b36b-c914e66878f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3797a9ec9b8688d78ac1177ac8c9f44a91921c3cc023a73bcf22b708efd2ac1c"
+  },
+  "id": "xwqhkhrSmiu7m4SO",
+  "tags": []
+}
